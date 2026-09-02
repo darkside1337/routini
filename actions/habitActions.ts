@@ -11,11 +11,9 @@ import {
   regenerateHabitsUserPrompt,
 } from "@/lib/ai/prompts";
 import { transformHabitsToLockStatus } from "@/lib/helpers";
-import { Habit } from "@/types";
 import prisma from "@/lib/db";
 import { HabitFrequency } from "@/lib/generated/prisma/enums";
 
-/* eslint-disable-next-line */
 const GenerateHabitsSchema = z.object({
   goal: z.string().min(5),
   additionalDetails: z.string().optional(),

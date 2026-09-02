@@ -45,7 +45,7 @@ export function MaxWidthWrapper({
     <div
       className={cn(
         "mx-auto w-full ",
-        /* maxWidthClasses[maxWidth] */ "max-w-7xl",
+        maxWidthClasses[maxWidth],
         paddingX && "px-4 sm:px-6 lg:px-8",
         paddingY && "py-8 sm:py-12 lg:py-16",
         className

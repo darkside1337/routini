@@ -27,7 +27,7 @@ export function TestimonialsSection() {
           {testimonials.map((testimonial, idx) => (
             <Card key={idx} className="border border-border">
               <CardContent className="pt-6">
-                <p className="text-foreground/80 mb-4 italic">"{testimonial.quote}"</p>
+                <p className="text-foreground/80 mb-4 italic">&ldquo;{testimonial.quote}&rdquo;</p>
                 <div>
                   <p className="font-semibold text-sm">{testimonial.author}</p>
                   <p className="text-xs text-muted-foreground">{testimonial.role}</p>
