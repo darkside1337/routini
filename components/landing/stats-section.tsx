@@ -1,7 +1,7 @@
 export function StatsSection() {
   const stats = [
     { number: "87%", label: "Complete their habits daily" },
-    { number: "42", label: "Average habits tracked" },
+    { number: "42", label: "Days to form a habit" },
     { number: "91%", label: "Reach their goals within 90 days" },
   ]
 
