@@ -27,8 +27,6 @@ export const generateHabits = async ({
   count = 5,
 }: generateHabitsSchema) => {
   try {
-    console.log("generateHabits started", { goal, additionalDetails, count });
-
     // 1. Validate input
     const validated = GenerateHabitsSchema.safeParse({
       goal,
@@ -47,7 +45,6 @@ export const generateHabits = async ({
       console.error("generateHabits unauthorized");
       return { success: false, error: "Unauthorized" };
     }
-    console.log("generateHabits authorized", { userId: session.user.id });
     // 3. Call AI API
 
     const userPrompt = generateHabitsUserPrompt({
@@ -75,13 +72,11 @@ export const generateHabits = async ({
     }
 
     const content = response.text;
-    console.log("generateHabits ai response", content);
 
     let parsed: { habits?: string[] };
 
     try {
       parsed = JSON.parse(content);
-      console.log("generateHabits parsed", parsed);
     } catch (error) {
       console.error("generateHabits parse error", error);
       return { success: false, error: "Failed to generate habits" };
