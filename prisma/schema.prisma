@@ -1,0 +1,299 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String    @id
+  name            String?
+  email           String    @unique
+  emailVerified   Boolean   @default(false)
+  displayName     String?
+  image           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  username        String?   @unique
+  displayUsername String?
+  sessions        Session[]
+  accounts        Account[]
+  goals           Goal[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ============================================================================
+// Habits stuff
+// ===========================================================================
+// This is your Prisma schema file
+// Routini: AI-powered habit and goal-building platform
+
+// ============================================================================
+// ENUMS - Type-safe status and configuration values
+// ============================================================================
+
+enum GoalStatus {
+  NOT_STARTED // Goal created but not actively pursued
+  IN_PROGRESS // Actively working on it
+  COMPLETED // Successfully achieved
+  ABANDONED // User gave up or deprioritized
+  ON_HOLD // Paused but may resume
+}
+
+enum GoalPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum HabitFrequency {
+  DAILY // Every day
+  WEEKLY // X times per week
+  MONTHLY // X times per month
+  CUSTOM // User-defined schedule
+}
+
+enum HabitStatus {
+  ACTIVE // Currently tracking
+  PAUSED // Temporarily stopped
+  COMPLETED // Achieved its purpose (rare for habits)
+  ARCHIVED // No longer relevant
+}
+
+enum HabitDifficulty {
+  EASY // Low effort, high success rate
+  MEDIUM // Moderate challenge
+  HARD // Requires significant discipline
+}
+
+// ============================================================================
+// GOAL - The high-level outcome users want to achieve
+// ============================================================================
+
+model Goal {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Core fields
+  title       String // "Run a marathon"
+  description String? @db.Text // AI-generated or user-provided context
+
+  // Status & priority
+  status   GoalStatus   @default(IN_PROGRESS)
+  priority GoalPriority @default(MEDIUM)
+
+  // Timeline
+  startDate   DateTime  @default(now())
+  targetDate  DateTime? // Optional deadline
+  completedAt DateTime? // Actual completion timestamp
+
+  // AI metadata (optional but powerful)
+  aiGenerated Boolean @default(false) // Was this goal created by AI?
+  aiPrompt    String? @db.Text // Original user prompt for context
+
+  // Relationships
+  habits     Habit[]
+  milestones Milestone[] // Optional: break goals into checkpoints
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status]) // Composite for dashboard queries
+}
+
+// ============================================================================
+// HABIT - The daily/weekly system that supports a goal
+// ============================================================================
+
+model Habit {
+  id     String @id @default(cuid())
+  goalId String
+  goal   Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  // Core fields
+  name        String // "Morning run"
+  description String? @db.Text
+
+  // Frequency & target
+  frequency      HabitFrequency
+  targetCount    Int? // e.g., 3 (for "3 times per week")
+  targetDuration Int? // minutes per session (optional)
+
+  // Status & difficulty
+  status     HabitStatus     @default(ACTIVE)
+  difficulty HabitDifficulty @default(MEDIUM)
+
+  // Scheduling (optional)
+  reminderTime  String? // "08:00" - time for push notifications
+  preferredDays Int[] // [1,3,5] = Mon, Wed, Fri (0=Sun, 6=Sat)
+
+  // AI metadata
+  aiGenerated Boolean @default(false)
+  aiReasoning String? @db.Text // Why AI suggested this habit
+
+  // Tracking
+  logs HabitLog[]
+
+  // Order (for UI sorting within a goal)
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([goalId])
+  @@index([status])
+  @@index([goalId, status]) // For filtering active habits per goal
+}
+
+// ============================================================================
+// HABIT LOG - Daily/weekly check-ins
+// ============================================================================
+
+model HabitLog {
+  id      String @id @default(cuid())
+  habitId String
+  habit   Habit  @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  // Tracking data
+  date      DateTime @default(now()) @db.Date // Use date type for day-level granularity
+  completed Boolean  @default(true)
+
+  // Optional enrichment
+  duration  Int? // minutes spent (if applicable)
+  intensity Int? // 1-5 scale (optional)
+  note      String? @db.Text // User reflection
+  mood      Int? // 1-5 scale for mood tracking
+
+  createdAt DateTime @default(now())
+
+  // Prevent duplicate logs for same habit on same day
+  @@unique([habitId, date])
+  @@index([habitId])
+  @@index([date]) // For heatmap queries
+  @@index([habitId, date]) // Composite for streak calculations
+}
+
+// ============================================================================
+// MILESTONE - Optional checkpoints for breaking down goals
+// ============================================================================
+
+model Milestone {
+  id     String @id @default(cuid())
+  goalId String
+  goal   Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  title       String // "Complete 5K run"
+  description String?   @db.Text
+  targetDate  DateTime?
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  order Int @default(0) // For sequential milestones
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([goalId])
+  @@index([goalId, completed])
+}
+
+// ============================================================================
+// OPTIONAL: User preferences (for AI personalization)
+// ============================================================================
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // AI behavior
+  preferredTone String? // "motivational", "direct", "casual"
+  weekStartsOn  Int     @default(0) // 0=Sunday, 1=Monday
+
+  // Notifications
+  dailyReminderTime   String? // "08:00"
+  enableNotifications Boolean @default(true)
+
+  // Privacy
+  shareProgress Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// INDEXES SUMMARY (already included above, but here's the strategy)
+// ============================================================================
+
+// Primary indexes:
+// - All foreign keys (userId, goalId, habitId)
+// - Status fields for filtering
+// - Composite indexes for common queries:
+//   * [userId, status] - "Show me active goals"
+//   * [goalId, status] - "Show me active habits for this goal"
+//   * [habitId, date] - "Calculate streak for this habit"
+
+// Performance notes:
+// - @@unique on [habitId, date] prevents duplicate logs AND creates an index
+// - @db.Date on HabitLog.date improves date-based queries
+// - @db.Text for long fields (description, notes) vs String (255 char limit)
