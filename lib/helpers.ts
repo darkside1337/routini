@@ -11,7 +11,7 @@ import { HabitWithLockStatus } from "@/types";
  * @param {string} email - The email address to generate a username from.
  * @returns {string} The generated username.
  */
-function generateUsername(email: string): string {
+export function generateUsername(email: string): string {
   const base = email
     .split("@")[0]
     .toLowerCase()
@@ -30,7 +30,7 @@ export const transformHabitsToLockStatus = (
     locked: false,
   }));
 };
-function formatShortDate(iso: string | Date): string {
+export function formatShortDate(iso: string | Date): string {
   const date = typeof iso === "string" ? new Date(iso) : iso;
 
   return date.toLocaleDateString("en-US", {
@@ -38,11 +38,42 @@ function formatShortDate(iso: string | Date): string {
     day: "numeric", // "26"
   });
 }
-function toUtcMidnight(input: string | Date): Date {
+export function toUtcMidnight(input: string | Date): Date {
   const d = typeof input === "string" ? new Date(input) : input;
   return new Date(
     Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0),
   );
 }
 
-export { generateUsername, formatShortDate, toUtcMidnight };
+// lib/helpers.ts
+
+export function calculateHabitStats(
+  logs: { date: Date; completed: boolean }[],
+) {
+  const completedLogs = logs.filter((log) => log.completed);
+
+  // Set of timestamps (in UTC ms) for fast day-by-day lookup
+  const completedDays = new Set(
+    completedLogs.map((l) => toUtcMidnight(l.date).getTime()),
+  );
+
+  const today = toUtcMidnight(new Date());
+  const oneDayMs = 24 * 60 * 60 * 1000;
+
+  const completedToday = completedDays.has(today.getTime());
+
+  // Determine where to start counting the streak:
+  // If completed today, start checking backwards from today.
+  // If not completed today, start checking backwards from yesterday (the streak isn't broken yet today!).
+  let currentCheck = completedToday
+    ? today.getTime()
+    : today.getTime() - oneDayMs;
+  let streak = 0;
+
+  while (completedDays.has(currentCheck)) {
+    streak++;
+    currentCheck -= oneDayMs; // step back 1 day
+  }
+
+  return { completedToday, streak };
+}

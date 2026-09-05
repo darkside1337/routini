@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
-import { useState } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { formatShortDate } from "@/lib/helpers";
@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toggleHabitLog } from "@/actions/habitActions";
+import { toast } from "sonner";
 
 const getPriorityBadgeStyles = (priority: string) => {
   switch (priority.toUpperCase()) {
@@ -35,14 +37,48 @@ const getPriorityBadgeStyles = (priority: string) => {
 
 export const GoalCard = ({ goal }: { goal: GoalWithHabits }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [, startTransition] = useTransition();
   const { id, title, description, priority, status, startDate, habits } = goal;
 
-  const totalHabits = habits?.length || 0;
-  const completed = habits?.filter((h) => h.completedToday)?.length || 0;
+  const [optimisticHabits, setOptimisticHabits] = useOptimistic(
+    habits || [],
+    (currentHabits, toggledHabitId: string) => {
+      return currentHabits.map((h) => {
+        if (h.id !== toggledHabitId) return h;
+        const nextCompleted = !h.completedToday;
+        const currentStreak = h.streak ?? 0;
+        const nextStreak = nextCompleted
+          ? currentStreak + 1
+          : Math.max(0, currentStreak - 1);
+
+        return {
+          ...h,
+          completedToday: nextCompleted,
+          streak: nextStreak,
+        };
+      });
+    },
+  );
+
+  const totalHabits = optimisticHabits.length;
+  const completed = optimisticHabits.filter((h) => h.completedToday).length;
   const progressValue =
     totalHabits === 0 ? 0 : Math.round((completed / totalHabits) * 100);
 
   const formattedStatus = status.replace("_", " ");
+
+  const handleToggleHabit = (habitId: string) => {
+    startTransition(async () => {
+      setOptimisticHabits(habitId);
+      const response = await toggleHabitLog({
+        habitId,
+        date: new Date(),
+      });
+      if (!response.success) {
+        toast.error(response.error || "Failed to update habit!");
+      }
+    });
+  };
 
   return (
     <Card
@@ -118,14 +154,18 @@ export const GoalCard = ({ goal }: { goal: GoalWithHabits }) => {
       </div>
 
       {/* Daily Habits */}
-      {habits && habits.length > 0 && (
+      {optimisticHabits && optimisticHabits.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-foreground mb-3">
             Daily Habits
           </h3>
           <div className="space-y-2">
-            {habits.map((habit) => (
-              <HabitRow key={habit.id} habit={habit} />
+            {optimisticHabits.map((habit) => (
+              <HabitRow
+                key={habit.id}
+                habit={habit}
+                onToggle={() => handleToggleHabit(habit.id)}
+              />
             ))}
           </div>
         </div>
@@ -134,7 +174,13 @@ export const GoalCard = ({ goal }: { goal: GoalWithHabits }) => {
   );
 };
 
-export const HabitRow = ({ habit }: { habit: DashboardHabit }) => {
+export const HabitRow = ({
+  habit,
+  onToggle,
+}: {
+  habit: DashboardHabit;
+  onToggle: () => void;
+}) => {
   return (
     <Label
       htmlFor={habit.id}
@@ -143,10 +189,16 @@ export const HabitRow = ({ habit }: { habit: DashboardHabit }) => {
       <div className="flex items-center gap-3 min-w-0">
         <Checkbox
           id={habit.id}
-          defaultChecked={habit.completedToday}
+          checked={Boolean(habit.completedToday)}
           className="size-4.5 rounded-md"
+          onCheckedChange={onToggle}
         />
-        <span className="text-sm font-medium text-foreground leading-normal">
+        <span
+          className={cn(
+            "text-sm font-medium text-foreground leading-normal",
+            habit.completedToday && "line-through text-muted-foreground",
+          )}
+        >
           {habit.name}
         </span>
       </div>

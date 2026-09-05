@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
+import { calculateHabitStats } from "@/lib/helpers";
 import { GoalWithHabits, GoalFilter } from "@/types";
 import { headers } from "next/headers";
 
@@ -33,8 +34,11 @@ export const getGoals = async (
       },
       include: {
         habits: {
-          orderBy: {
-            order: "asc",
+          orderBy: { order: "asc" },
+          include: {
+            logs: {
+              orderBy: { date: "desc" },
+            },
           },
         },
       },
@@ -43,9 +47,25 @@ export const getGoals = async (
       },
     });
 
+    // map over habits & populate with completedToday and streaks
+
+    const goalsWithStats = goals.map((goal) => {
+      return {
+        ...goal,
+        habits: goal.habits.map((habit) => {
+          const { completedToday, streak } = calculateHabitStats(habit.logs);
+          return {
+            ...habit,
+            completedToday,
+            streak,
+          };
+        }),
+      };
+    });
+
     return {
       success: true,
-      data: goals,
+      data: goalsWithStats,
     };
   } catch (error) {
     console.error("Error fetching goals:", error);
