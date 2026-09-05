@@ -1,3 +1,21 @@
+import {
+  Prisma,
+  GoalStatus,
+  GoalPriority,
+  HabitFrequency,
+  HabitStatus,
+  HabitDifficulty,
+  Habit as PrismaHabit,
+} from "@/lib/generated/prisma/client";
+
+export type {
+  GoalStatus,
+  GoalPriority,
+  HabitFrequency,
+  HabitStatus,
+  HabitDifficulty,
+};
+
 export type Habit = {
   id: string;
   text: string;
@@ -6,27 +24,24 @@ export type Habit = {
 
 export type HabitWithLockStatus = Habit & { locked: boolean };
 
-export type DashboardHabit = {
-  id: string;
-  name: string;
-  frequency?: string;
-  status?: string;
-  order?: number;
+export type DashboardHabit = PrismaHabit & {
   completedToday?: boolean;
   streak?: number;
 };
 
-export type GoalWithHabits = {
-  id: string;
-  title: string;
-  description?: string | null;
-  status: string;
-  priority: string;
-  startDate: string | Date;
-  targetDate?: string | Date | null;
-  completedAt?: string | Date | null;
-  userId?: string;
-  habits?: DashboardHabit[];
+export type GoalWithHabits = Omit<
+  Prisma.GoalGetPayload<{
+    include: {
+      habits: {
+        orderBy: {
+          order: "asc";
+        };
+      };
+    };
+  }>,
+  "habits"
+> & {
+  habits: DashboardHabit[];
 };
 
 export type GoalFilter = "ALL" | "IN_PROGRESS" | "COMPLETED";

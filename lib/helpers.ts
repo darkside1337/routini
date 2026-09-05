@@ -38,4 +38,11 @@ function formatShortDate(iso: string | Date): string {
     day: "numeric", // "26"
   });
 }
-export { generateUsername, formatShortDate };
+function toUtcMidnight(input: string | Date): Date {
+  const d = typeof input === "string" ? new Date(input) : input;
+  return new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0),
+  );
+}
+
+export { generateUsername, formatShortDate, toUtcMidnight };

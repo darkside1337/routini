@@ -4,13 +4,14 @@ import { auth } from "@/lib/auth";
 import { genAI } from "@/lib/ai/ai";
 import * as z from "zod";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import {
   generateHabitsSystemPrompt,
   generateHabitsUserPrompt,
   regenerateHabitsSystemPrompt,
   regenerateHabitsUserPrompt,
 } from "@/lib/ai/prompts";
-import { transformHabitsToLockStatus } from "@/lib/helpers";
+import { toUtcMidnight, transformHabitsToLockStatus } from "@/lib/helpers";
 import prisma from "@/lib/db";
 import { HabitFrequency } from "@/lib/generated/prisma/enums";
 
@@ -236,6 +237,8 @@ export const saveHabits = async (input: SaveHabitsInput) => {
       },
     });
 
+    revalidatePath("/dashboard");
+
     return {
       success: true,
       data: createdGoal,
@@ -246,5 +249,81 @@ export const saveHabits = async (input: SaveHabitsInput) => {
       success: false,
       error: "Failed to save habits",
     };
+  }
+};
+const ToggleHabitLogSchema = z.object({
+  habitId: z.string().min(1),
+  date: z.string().or(z.date()),
+});
+export const toggleHabitLog = async (input: {
+  habitId: string;
+  date: string | Date;
+}) => {
+  try {
+    // 1. Zod Validation
+    const validated = ToggleHabitLogSchema.safeParse(input);
+    if (!validated.success) {
+      console.error("toggleHabitLog validation error", validated.error);
+      return { success: false, error: "Invalid data" };
+    }
+    const { habitId, date } = validated.data;
+    // 2. Auth Check
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // 3. normalize Date to UTC Midnight
+
+    const normalizedDate = toUtcMidnight(date);
+
+    // 4. IDOR Guard + Check existing log;
+
+    const habit = await prisma.habit.findFirst({
+      where: {
+        id: habitId,
+        goal: {
+          userId: session.user.id,
+        },
+      },
+      include: {
+        logs: {
+          where: {
+            date: normalizedDate,
+          },
+        },
+      },
+    });
+
+    if (!habit) {
+      return { success: false, error: "Habit not found" };
+    }
+    // 5. Upsert toggle
+    const existingLog = habit.logs[0];
+    const nextCompleted = existingLog ? !existingLog.completed : true;
+    const log = await prisma.habitLog.upsert({
+      where: {
+        habitId_date: {
+          habitId,
+          date: normalizedDate,
+        },
+      },
+      create: {
+        habitId,
+        date: normalizedDate,
+        completed: true,
+      },
+      update: {
+        completed: nextCompleted,
+      },
+    });
+    // 6. Revalidate Cache
+    revalidatePath("/dashboard");
+    return { success: true, data: log };
+  } catch (error) {
+    console.error("Error toggling habit log:", error);
+    return { success: false, error: "Failed to toggle habit log" };
   }
 };
