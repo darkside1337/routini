@@ -1,4 +1,8 @@
-import { HabitWithLockStatus } from "@/types";
+import {
+  HabitWithLockStatus,
+  HabitFrequency,
+  HabitDifficulty,
+} from "@/types";
 
 /**
  * Generates a username based on an email address.
@@ -20,15 +24,36 @@ export function generateUsername(email: string): string {
   return `${base}${suffix}`;
 }
 
+export type EnrichedHabitInput = {
+  name: string;
+  frequency?: HabitFrequency;
+  targetDuration?: number | null;
+  difficulty?: HabitDifficulty;
+  aiReasoning?: string | null;
+};
+
 /* Transform data to include id and locked status */
 export const transformHabitsToLockStatus = (
-  habits: string[],
+  habits: (string | EnrichedHabitInput)[],
 ): HabitWithLockStatus[] => {
-  return habits.map((habit) => ({
-    text: habit,
-    id: crypto.randomUUID(),
-    locked: false,
-  }));
+  return habits.map((habit) => {
+    if (typeof habit === "string") {
+      return {
+        text: habit,
+        id: crypto.randomUUID(),
+        locked: false,
+      };
+    }
+    return {
+      text: habit.name,
+      frequency: habit.frequency,
+      targetDuration: habit.targetDuration,
+      difficulty: habit.difficulty,
+      aiReasoning: habit.aiReasoning,
+      id: crypto.randomUUID(),
+      locked: false,
+    };
+  });
 };
 export function formatShortDate(iso: string | Date): string {
   const date = typeof iso === "string" ? new Date(iso) : iso;

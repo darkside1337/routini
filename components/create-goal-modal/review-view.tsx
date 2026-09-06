@@ -12,6 +12,7 @@ import {
   Sparkles,
   Lock,
   Info,
+  AlertCircle,
 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import {
@@ -28,6 +29,7 @@ interface CreateGoalReviewViewProps {
   isGenerating: boolean;
   handleSaveHabits: () => void;
   isSaving: boolean;
+  generationError?: string | null;
 }
 
 const GENERATING_STEPS = [
@@ -45,6 +47,7 @@ const CreateGoalReviewView = ({
   isGenerating,
   handleSaveHabits,
   isSaving,
+  generationError,
 }: CreateGoalReviewViewProps) => {
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -96,8 +99,29 @@ const CreateGoalReviewView = ({
         </DialogDescription>
       </DialogHeader>
 
+      {/* Inline generation error alert when habits already exist (e.g. re-roll failed) */}
+      {generationError && generatedHabits && generatedHabits.length > 0 && !isGenerating && (
+        <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs animate-fade-in">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertCircle className="size-4 shrink-0" />
+            <span className="truncate">{generationError}</span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleGenerateAgain}
+            disabled={isGenerating}
+            className="h-7 px-2.5 text-xs font-medium text-destructive hover:text-destructive hover:bg-destructive/15 shrink-0"
+          >
+            <RotateCw className="size-3 mr-1" />
+            Retry
+          </Button>
+        </div>
+      )}
+
       {/* Instructional helper hint */}
-      {!isGenerating && generatedHabits && generatedHabits.length > 0 && (
+      {!isGenerating && !generationError && generatedHabits && generatedHabits.length > 0 && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/40 border border-border/50 text-xs text-muted-foreground">
           <Info className="size-3.5 shrink-0 text-primary" />
           <span>
@@ -116,36 +140,72 @@ const CreateGoalReviewView = ({
         </div>
       )}
 
-      {/* Habit Cards Container */}
-      <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
-        {isGenerating ? (
-          <>
-            {/* Show locked habits first */}
-            {lockedHabits.map((habit) => (
+      {/* Habit Cards Container or Full Error State */}
+      {generationError && (!generatedHabits || generatedHabits.length === 0) && !isGenerating ? (
+        <div className="flex flex-col items-center justify-center text-center p-8 rounded-xl border border-destructive/20 bg-destructive/5 space-y-3.5 my-2 animate-fade-in">
+          <div className="size-11 rounded-full bg-destructive/10 text-destructive flex items-center justify-center">
+            <AlertCircle className="size-5" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold text-foreground">Generation Failed</h4>
+            <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
+              {generationError}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={switchViewToForm}
+              className="text-xs gap-1.5"
+            >
+              <ArrowLeft className="size-3.5" />
+              Edit Prompt
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleGenerateAgain}
+              disabled={isGenerating}
+              className="text-xs font-medium gap-1.5"
+            >
+              <RotateCw className="size-3.5" />
+              Try Again
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2.5 max-h-95 overflow-y-auto pr-1">
+          {isGenerating ? (
+            <>
+              {/* Show locked habits first */}
+              {lockedHabits.map((habit) => (
+                <SelectableHabitCard
+                  key={habit.id}
+                  habit={habit}
+                  onToggle={handleToggleHabitLock}
+                  disabled={true}
+                />
+              ))}
+
+              {/* Shimmering placeholders for unlocked slots */}
+              {Array.from({ length: Math.max(1, unlockedCount) }).map((_, i) => (
+                <HabitCardSkeleton key={`skeleton-${i}`} index={i} />
+              ))}
+            </>
+          ) : (
+            generatedHabits?.map((habit) => (
               <SelectableHabitCard
                 key={habit.id}
                 habit={habit}
                 onToggle={handleToggleHabitLock}
-                disabled={true}
+                disabled={isSaving}
               />
-            ))}
-
-            {/* Shimmering placeholders for unlocked slots */}
-            {Array.from({ length: Math.max(1, unlockedCount) }).map((_, i) => (
-              <HabitCardSkeleton key={`skeleton-${i}`} index={i} />
-            ))}
-          </>
-        ) : (
-          generatedHabits?.map((habit) => (
-            <SelectableHabitCard
-              key={habit.id}
-              habit={habit}
-              onToggle={handleToggleHabitLock}
-              disabled={isSaving}
-            />
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Action Footer */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-border/60">

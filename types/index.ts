@@ -19,6 +19,10 @@ export type {
 export type Habit = {
   id: string;
   text: string;
+  frequency?: HabitFrequency;
+  targetDuration?: number | null;
+  difficulty?: HabitDifficulty;
+  aiReasoning?: string | null;
   time?: string;
 };
 

@@ -2,11 +2,11 @@
     lib/db.ts
 */
 import { PrismaClient } from "@/lib/generated/prisma/client";
-
 import { PrismaNeon } from "@prisma/adapter-neon";
+import { env } from "@/lib/env";
 
 const adapter = new PrismaNeon({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: env.DATABASE_URL,
 });
 
 const globalForPrisma = global as unknown as {

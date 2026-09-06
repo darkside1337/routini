@@ -48,6 +48,7 @@ const CreateGoalModal = ({
   const [goalData, setGoalData] = useState<GoalInput | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   const {
     control,
@@ -70,32 +71,39 @@ const CreateGoalModal = ({
       if (!isSaving && !isGenerating) {
         setTimeout(() => {
           setCurrentView("form");
+          setGenerationError(null);
         }, 300);
       }
     }
   };
 
   const switchViewToReview = () => setCurrentView("review");
-  const switchViewToForm = () => setCurrentView("form");
+  const switchViewToForm = () => {
+    setGenerationError(null);
+    setCurrentView("form");
+  };
 
   const handleGenerateHabits = async (data: GoalInput) => {
     try {
       setGoalData(data);
+      setGenerationError(null);
       setIsGenerating(true);
       switchViewToReview();
       const result = await generateHabits(data);
 
       if (!result.success || !result.data) {
-        toast.error(result.error ?? "Failed to generate habits");
-        switchViewToForm();
+        const errorMsg = result.error ?? "Failed to generate habits";
+        setGenerationError(errorMsg);
+        toast.error(errorMsg);
         return;
       }
 
       setGeneratedHabits(result.data);
     } catch (error) {
-      toast.error("An unexpected error occurred while generating habits");
+      const errorMsg = "An unexpected error occurred while generating habits";
+      setGenerationError(errorMsg);
+      toast.error(errorMsg);
       console.error("Generate habits error:", error);
-      switchViewToForm();
     } finally {
       setIsGenerating(false);
     }
@@ -115,6 +123,10 @@ const CreateGoalModal = ({
         additionalDetails: goalData.additionalDetails,
         habits: generatedHabits.map((h) => ({
           text: h.text,
+          frequency: h.frequency,
+          targetDuration: h.targetDuration,
+          difficulty: h.difficulty,
+          aiReasoning: h.aiReasoning,
           locked: h.locked,
           id: h.id,
         })),
@@ -130,6 +142,7 @@ const CreateGoalModal = ({
       // Reset modal state and close
       setGeneratedHabits(null);
       setGoalData(null);
+      setGenerationError(null);
       setCurrentView("form");
       reset();
       setOpen(false);
@@ -148,13 +161,20 @@ const CreateGoalModal = ({
   };
 
   const handleGenerateAgain = async () => {
-    if (!goalData || !generatedHabits) {
+    if (!goalData) {
       toast.error("No goal data available");
+      return;
+    }
+
+    // If no habits exist yet (e.g. initial generation failed and user clicks retry)
+    if (!generatedHabits || generatedHabits.length === 0) {
+      await handleGenerateHabits(goalData);
       return;
     }
 
     try {
       setIsGenerating(true);
+      setGenerationError(null);
       // keep the full objects so we preserve ids + locked state
       const lockedHabits = generatedHabits.filter((habit) => habit.locked);
       const unlockedCount = generatedHabits.filter((h) => !h.locked).length;
@@ -167,7 +187,9 @@ const CreateGoalModal = ({
       });
 
       if (!result.success || !result.data) {
-        toast.error(result.error ?? "Failed to regenerate habits");
+        const errorMsg = result.error ?? "Failed to regenerate habits";
+        setGenerationError(errorMsg);
+        toast.error(errorMsg);
         return;
       }
 
@@ -175,7 +197,9 @@ const CreateGoalModal = ({
       setGeneratedHabits(updatedHabits);
       toast.success("Fresh habits generated");
     } catch (error) {
-      toast.error("An error occurred while regenerating habits");
+      const errorMsg = "An error occurred while regenerating habits";
+      setGenerationError(errorMsg);
+      toast.error(errorMsg);
       console.error("Generate habits error:", error);
     } finally {
       setIsGenerating(false);
@@ -226,6 +250,7 @@ const CreateGoalModal = ({
             isGenerating={isGenerating}
             handleSaveHabits={handleSaveHabits}
             isSaving={isSaving}
+            generationError={generationError}
           />
         )}
       </DialogContent>

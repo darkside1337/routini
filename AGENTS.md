@@ -14,6 +14,14 @@ Routini is an AI-powered goal breakdown and habit-tracking web app built with Ne
 
 - **Database Safety:** Never run destructive database commands (such as `prisma migrate reset` or manual table drops) without explicit user confirmation.
 
+## UI & Design Conventions
+
+- **Mobile-First Design:** Always build and style components mobile-first:
+  - Base Tailwind classes must target small mobile screens (320px–420px) without cramped padding, accidental horizontal overflow, or rigid fixed heights.
+  - Progressive enhancement: layer `sm:`, `md:`, and `lg:` for tablet and desktop viewports.
+  - Form dialogs and cards must use responsive padding (`p-4 sm:p-6`), wrap long text (`break-words`), use `min-w-0` on flex items, and support responsive minimum heights (`min-h-[...] sm:min-h-[...]`).
+  - Touch targets for interactive elements (buttons, dropdowns, inputs, checkboxes) must be comfortable on touch devices (at least 36px–40px).
+
 ## Progressive Disclosure
 
 Refer to these guides when working in their respective areas:

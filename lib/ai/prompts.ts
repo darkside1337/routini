@@ -1,7 +1,7 @@
 import "server-only";
 
 export const generateHabitsSystemPrompt = () => {
-  return `You are a habit formation expert who helps people achieve their goals through small, actionable daily habits. Generate specific, measurable, and achievable daily habits.`;
+  return `You are a behavioral psychologist and habit formation expert. You help people achieve their goals through small, actionable daily habits. Generate specific, measurable, bite-sized daily habits with clear duration, difficulty, and rationale.`;
 };
 
 export const generateHabitsUserPrompt = ({
@@ -13,18 +13,37 @@ export const generateHabitsUserPrompt = ({
   additionalDetails?: string;
   count: number;
 }) => {
-  return `Generate exactly ${count} specific, actionable daily habits for this goal:
+  return `Generate exactly ${count} specific, actionable habits for this goal:
 
 Goal: ${goal}
 ${additionalDetails ? `Additional context: ${additionalDetails}` : ""}
 
+Requirements for each habit:
+- "name": Concise, actionable action title (e.g. "15-min Morning Zone 2 Jog")
+- "frequency": "DAILY", "WEEKLY", or "MONTHLY" (default to "DAILY")
+- "targetDuration": Recommended duration in minutes as an integer (e.g. 5, 15, 30)
+- "difficulty": "EASY", "MEDIUM", or "HARD"
+- "aiReasoning": 1 concise sentence explaining why this habit directly supports the goal
+
 IMPORTANT: Return ONLY valid JSON with no markdown code fences, no preamble, no explanation.
-Format: {"habits": ["habit 1", "habit 2", ...]}`;
+Format:
+{
+  "habits": [
+    {
+      "name": "string",
+      "frequency": "DAILY",
+      "targetDuration": 15,
+      "difficulty": "EASY",
+      "aiReasoning": "string"
+    }
+  ]
+}`;
 };
 
 export const regenerateHabitsSystemPrompt = () => {
-  return `You are a habit formation expert. Generate NEW daily habits that are DIFFERENT from the ones already selected.`;
+  return `You are a behavioral psychologist and habit formation expert. Generate NEW habits that are distinctly DIFFERENT from existing ones, providing actionable duration, difficulty, and rationale.`;
 };
+
 export const regenerateHabitsUserPrompt = ({
   goal,
   additionalDetails,
@@ -36,21 +55,34 @@ export const regenerateHabitsUserPrompt = ({
   count: number;
   lockedHabits: string[];
 }) => {
-  return `Generate exactly ${count} NEW daily habits for this goal that are DIFFERENT from the already selected habits:
+  return `Generate exactly ${count} NEW habits for this goal that are DIFFERENT from the already selected habits:
 
 Goal: ${goal}
 ${additionalDetails ? `Additional context: ${additionalDetails}` : ""}
 
-ALREADY SELECTED HABITS (DO NOT repeat or create similar ones):
+ALREADY SELECTED HABITS (DO NOT repeat or duplicate these):
 ${lockedHabits.map((habit, i) => `${i + 1}. ${habit}`).join("\n")}
 
 Requirements:
-- Generate ${count} completely new and different habits
-- Focus on different aspects of the goal than the selected habits
-- Make them complement the existing habits
-- Keep them actionable and achievable daily
-- Avoid any overlap or similarity with the selected habits above
+- Generate ${count} completely new, fresh habits
+- Complement the existing habits rather than repeating them
+- "name": Concise, actionable action title
+- "frequency": "DAILY", "WEEKLY", or "MONTHLY" (default to "DAILY")
+- "targetDuration": Recommended duration in minutes as an integer (e.g. 5, 15, 30)
+- "difficulty": "EASY", "MEDIUM", or "HARD"
+- "aiReasoning": 1 concise sentence explaining why this habit directly supports the goal
 
 IMPORTANT: Return ONLY valid JSON with no markdown code fences, no preamble, no explanation.
-Format: {"habits": ["habit 1", "habit 2", ...]}`;
+Format:
+{
+  "habits": [
+    {
+      "name": "string",
+      "frequency": "DAILY",
+      "targetDuration": 15,
+      "difficulty": "EASY",
+      "aiReasoning": "string"
+    }
+  ]
+}`;
 };

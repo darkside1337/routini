@@ -1,11 +1,16 @@
 "use client";
 
-import { Lock, Unlock } from "lucide-react";
+import { Lock, Unlock, Clock, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HabitWithLockStatus } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface HabitCardProps {
   habit: HabitWithLockStatus;
@@ -18,7 +23,7 @@ export function SelectableHabitCard({
   onToggle,
   disabled = false,
 }: HabitCardProps) {
-  const { id, text, locked } = habit;
+  const { id, text, locked, targetDuration, difficulty, aiReasoning } = habit;
 
   return (
     <Button
@@ -60,6 +65,56 @@ export function SelectableHabitCard({
             >
               {text}
             </p>
+
+            {(targetDuration || difficulty || aiReasoning) && (
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                {targetDuration ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md">
+                    <Clock className="size-3 text-muted-foreground/80" />
+                    {targetDuration}m
+                  </span>
+                ) : null}
+                {difficulty && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px] px-1.5 py-0 h-4 font-medium uppercase tracking-wider",
+                      difficulty === "EASY" &&
+                        "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
+                      difficulty === "MEDIUM" &&
+                        "border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10",
+                      difficulty === "HARD" &&
+                        "border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10",
+                    )}
+                  >
+                    {difficulty.toLowerCase()}
+                  </Badge>
+                )}
+                {aiReasoning && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                          }
+                        }}
+                        className="inline-flex items-center text-muted-foreground/70 hover:text-foreground transition-colors p-0.5 rounded cursor-help"
+                        aria-label="Why this habit was recommended"
+                      >
+                        <Info className="size-3.5" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs text-xs">
+                      {aiReasoning}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
