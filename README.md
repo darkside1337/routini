@@ -2,17 +2,48 @@
 
 > **Turn high-level ambitions into bite-sized, sustainable daily habits in seconds.**
 
-Routini is an AI-powered goal decomposition and habit-tracking platform designed to eliminate the cognitive friction and blank-canvas paralysis of building sustainable routines. Instead of struggling to manually architect habits and schedules from scratch, users provide high-level goals (e.g. *"Learn TypeScript"*, *"Run a 5K"*, *"Improve deep work"*), and Routini generates structured, actionable daily routines with an interactive lock-and-reroll curation board.
+Routini is an AI-powered goal decomposition and habit-tracking platform built to eliminate the cognitive friction and blank-canvas paralysis of designing sustainable routines. Instead of manually architecting habits and schedules from scratch, users provide a high-level goal (e.g. *"Learn TypeScript"*, *"Run a 5K"*, *"Improve deep work"*), and Routini generates a structured, actionable daily routine through an interactive lock-and-reroll curation board.
 
 ---
 
 ## ✨ Features
 
-- **🤖 AI Goal Decomposition**: Powered by Google Gemini (`@google/genai`), decomposing big ambitions into 3–5 realistic daily habits.
-- **🔒 Interactive Lock & Re-roll Board**: Pin and lock habit suggestions you love, re-roll the rest until the routine fits your life perfectly.
-- **⚡ Two-Stage Modal Flow**: Minimal-friction creation modal with contextual loading states and keyboard shortcuts.
-- **📊 Modern Dashboard**: Track daily habits, monitor streaks, filter goals by status, and visualize progress.
-- **🔐 Secure Authentication**: Integrated with [Better-Auth](https://better-auth.com/) supporting email/password as well as Google and GitHub OAuth.
+### 🤖 AI Goal Decomposition
+Powered by Google Gemini (`@google/genai`), Routini decomposes big ambitions into 3–5 realistic daily habits through an interactive curation board — pin the suggestions you love, and re-roll the rest until the routine fits your life.
+
+<video src="public/assets/demo/demo-ai-goal-creation.mp4" width="100%" autoplay loop muted playsinline></video>
+
+### 👋 Frictionless Onboarding
+A zero-friction starter flow gets new users from first sign-in to their first active routine in seconds with curated goal templates and instant prefill.
+
+<video src="public/assets/demo/demo-onboarding.mp4" width="100%" autoplay loop muted playsinline></video>
+
+### 📊 Daily Habit Tracking & Optimistic UI
+Track daily habits with zero-latency optimistic updates, animated completion progress bars, and instant status filtering (`In Progress`, `Completed`, `All`).
+
+<video src="public/assets/demo/demo-daily-tracking.mp4" width="100%" autoplay loop muted playsinline></video>
+
+### 🔥 Consistency Heatmap & Streaks
+Visualize long-term momentum with a GitHub-style 365-day consistency calendar, active milestone streaks, and detailed completion breakdowns per habit.
+
+<video src="public/assets/demo/demo-progress-heatmap.mp4" width="100%" autoplay loop muted playsinline></video>
+
+### ✏️ Goal & Habit Management
+Full routine lifecycle control: pause individual habits without breaking streak history, edit schedules and difficulty tiers, or archive completed goals.
+
+<video src="public/assets/demo/demo-edit-goal.mp4" width="100%" autoplay loop muted playsinline></video>
+
+### 📱 Mobile & Responsive Layout
+Built mobile-first with adaptive layouts that transition cleanly from desktop widescreen dashboards to compact mobile viewports with native touch targets and bottom navigation.
+
+<video src="public/assets/demo/demo-responsive-design.mp4" width="100%" autoplay loop muted playsinline></video>
+
+---
+
+### More at a Glance
+
+- **⚡ Two-Stage Modal Flow**: Minimal-friction creation modal with contextual skeleton loading states and keyboard shortcuts (`Enter`, `Esc`, `Space`).
+- **🔐 Secure Authentication**: Integrated with [Better-Auth](https://better-auth.com/), supporting Google and GitHub OAuth with automated account linking.
 - **🌓 Dark & Light Mode**: Seamless theme switching with persistent preferences and Tailwind CSS v4 styling.
 
 ---
@@ -25,7 +56,7 @@ Routini is an AI-powered goal decomposition and habit-tracking platform designed
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) + `shadcn/ui` + [Radix UI](https://www.radix-ui.com/) |
 | **Icons & UI** | [Lucide React](https://lucide.dev/), [Sonner](https://sonner.emilkowal.ski/) (Toasts), `tw-animate-css` |
 | **Database & ORM** | [PostgreSQL](https://www.postgresql.org/) (Neon-compatible) with [Prisma ORM v7](https://www.prisma.io/) |
-| **Authentication** | [Better-Auth](https://better-auth.com/) |
+| **Authentication** | [Better-Auth](https://better-auth.com/) (Google & GitHub OAuth) |
 | **AI Integration** | [Google Gen AI SDK](https://github.com/google/generative-ai-js) (`@google/genai`) |
 | **Validation** | [Zod](https://zod.dev/) |
 | **Package Manager** | `pnpm` exclusively |
@@ -36,9 +67,9 @@ Routini is an AI-powered goal decomposition and habit-tracking platform designed
 
 ```text
 routini/
-├── actions/                  # Server actions (habit generation, goal actions)
+├── actions/                  # Server actions (habit generation, goal actions, progress)
 ├── app/
-│   ├── (protected)/          # Authenticated routes (dashboard, layout, bottom-bar)
+│   ├── (protected)/          # Authenticated routes (dashboard, progress, layout)
 │   ├── (public)/auth/        # Public auth routes (sign-in, sign-up)
 │   ├── api/auth/[...all]/    # Better-Auth route handler
 │   ├── globals.css           # Tailwind v4 theme variables & styles
@@ -50,8 +81,10 @@ routini/
 │   ├── dashboard/            # Goal cards, filters, header, and goal lists
 │   ├── landing/              # Landing page marketing sections
 │   ├── navigation/           # Sidebar, bottom nav, and account dropdown
+│   ├── onboarding/           # Onboarding dialogue & starter goal presets
+│   ├── progress/             # Heatmap activity calendar & streak analytics
 │   └── ui/                   # Reusable shadcn / Radix primitives
-├── docs/                     # Product requirements (PRD.md) & design system (DESIGN.md)
+├── docs/                     # Product requirements (PRD.md), design system (DESIGN.md), architecture
 ├── lib/
 │   ├── ai/                   # Gemini client initialization and prompt templates
 │   ├── auth.ts               # Better-Auth server configuration
@@ -59,7 +92,8 @@ routini/
 │   ├── db.ts                 # Prisma singleton instance
 │   └── utils.ts              # Styling utilities (cn helper)
 ├── prisma/
-│   └── schema.prisma         # Database schema models (Goal, Habit, HabitLog, etc.)
+│   ├── schema.prisma         # Database schema models (Goal, Habit, HabitLog, etc.)
+│   └── seed.ts               # Demo data seeder with 100-day heatmap activity
 └── types/                    # Shared TypeScript interfaces and domain types
 ```
 
@@ -96,8 +130,8 @@ Fill in the required variables:
 | :--- | :--- | :--- |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@ep-xyz.neon.tech/routini?sslmode=require` |
 | `BETTER_AUTH_SECRET` | 32-character secret key for signing auth tokens | Generate with `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | Base URL of the authentication server | `http://localhost:3000` |
-| `NEXT_PUBLIC_APP_URL`| Public canonical URL of the application | `http://localhost:3000` |
+| `BETTER_AUTH_URL` | Base URL of the authentication server | `http://localhost:3001` |
+| `NEXT_PUBLIC_APP_URL`| Public canonical URL of the application | `http://localhost:3001` |
 | `GEMINI_API_KEY` | Google Gemini API Key for habit generation | `AIzaSy...` |
 | `GOOGLE_CLIENT_ID` | *(Optional)* Google OAuth client ID | |
 | `GOOGLE_CLIENT_SECRET` | *(Optional)* Google OAuth client secret | |
@@ -106,11 +140,12 @@ Fill in the required variables:
 
 ### 3. Initialize the Database
 
-Generate the Prisma Client and apply migrations:
+Generate the Prisma Client, push schema tables, and optionally seed rich demo data:
 
 ```bash
 pnpm prisma generate
 pnpm prisma db push
+pnpm db:seed      # Optional: Populates sample goals, active streaks, and 100-day heatmap logs
 ```
 
 ### 4. Run the Development Server
@@ -119,7 +154,7 @@ pnpm prisma db push
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3001](http://localhost:3001) in your browser.
 
 ---
 
@@ -127,7 +162,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Script | Command | Purpose |
 | :--- | :--- | :--- |
-| **Development** | `pnpm dev` | Starts Next.js development server with hot reloading |
+| **Development** | `pnpm dev` | Starts Next.js dev server on port 3001 with hot reloading |
+| **Database Seed** | `pnpm db:seed` | Populates goals, streaks, and 100-day heatmap history |
 | **Type Check** | `pnpm tsc --noEmit` | Runs TypeScript compiler check without emitting output |
 | **Lint** | `pnpm lint` | Runs ESLint across all codebase files |
 | **Build** | `pnpm build` | Compiles optimized production bundle |
