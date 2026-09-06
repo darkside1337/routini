@@ -5,10 +5,7 @@ import React, { useState } from "react";
 import { Button } from "./button";
 import {
   LayoutDashboard,
-  Target,
   TrendingUp,
-  Repeat,
-  Settings,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -27,19 +24,11 @@ const NavLinks = [
     href: "/dashboard",
     icon: LayoutDashboard,
   },
-  { id: 2, title: "Goals", href: "/dashboard/goals", icon: Target },
   {
-    id: 3,
+    id: 2,
     title: "Progress",
     href: "/dashboard/progress",
     icon: TrendingUp,
-  },
-  { id: 4, title: "Habits", href: "/habits", icon: Repeat },
-  {
-    id: 5,
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
   },
 ];
 
@@ -69,7 +58,7 @@ const CustomSidebar = () => {
         <Logo isCollapsed={isCollapsed} />
         <Button
           onClick={toggleSidebar}
-          className="size-8 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+          className="size-9 rounded-lg text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
           variant="ghost"
           size="icon"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}

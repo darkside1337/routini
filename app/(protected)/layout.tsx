@@ -9,12 +9,12 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="grid grid-cols-[auto_1fr] min-h-screen">
+    <div className="grid grid-cols-[auto_minmax(0,1fr)] min-h-screen w-full">
       <CustomSidebar />
-      <div className="flex flex-col min-h-screen md:ml-0">
-        <MaxWidthWrapper>
+      <div className="flex flex-col min-h-screen md:ml-0 min-w-0 w-full">
+        <MaxWidthWrapper className="min-w-0 w-full">
           {/* 1280px max width */}
-          <main>{children}</main>
+          <main className="min-w-0 w-full">{children}</main>
         </MaxWidthWrapper>
         <BottomBar />
       </div>

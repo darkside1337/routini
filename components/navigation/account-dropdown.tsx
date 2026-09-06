@@ -26,6 +26,22 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+function getUserInitials(name?: string | null, email?: string | null) {
+  if (name?.trim()) {
+    return name
+      .trim()
+      .split(/\s+/)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
+  if (email?.trim()) {
+    return email.slice(0, 2).toUpperCase();
+  }
+  return "U";
+}
+
 interface AccountDropdownForSidebarProps {
   isCollapsed?: boolean;
 }
@@ -39,22 +55,6 @@ export function AccountDropdownForSidebar({
   const { data: session, isPending } = authClient.useSession();
 
   const user = session?.user;
-
-  const getUserInitials = (name?: string | null, email?: string | null) => {
-    if (name?.trim()) {
-      return name
-        .trim()
-        .split(/\s+/)
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    if (email?.trim()) {
-      return email.slice(0, 2).toUpperCase();
-    }
-    return "U";
-  };
 
   const handleSignOut = async () => {
     try {
@@ -142,6 +142,132 @@ export function AccountDropdownForSidebar({
       >
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2.5 px-2 py-2 text-left text-sm rounded-lg bg-muted/40">
+            <Avatar className="size-8 rounded-lg shrink-0 border border-border/50">
+              <AvatarImage src={user.image ?? undefined} alt={displayName} />
+              <AvatarFallback className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
+              <span className="truncate font-semibold text-foreground text-xs">
+                {displayName}
+              </span>
+              <span className="truncate text-[11px] text-muted-foreground">
+                {user.email}
+              </span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+
+        <DropdownMenuSeparator className="my-1.5" />
+
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="cursor-pointer gap-2.5 py-2 px-2.5 rounded-lg text-xs font-medium"
+          >
+            {theme === "dark" ? (
+              <Sun className="size-4 text-amber-500" />
+            ) : (
+              <Moon className="size-4 text-indigo-500" />
+            )}
+            <span>Theme: {theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={() => router.push("/settings")}
+            className="cursor-pointer gap-2.5 py-2 px-2.5 rounded-lg text-xs font-medium"
+          >
+            <Settings className="size-4 text-muted-foreground" />
+            <span>Account Settings</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator className="my-1.5" />
+
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          variant="destructive"
+          className="cursor-pointer gap-2.5 py-2 px-2.5 rounded-lg text-xs font-medium text-destructive focus:bg-destructive/10 focus:text-destructive"
+        >
+          <LogOut className="size-4" />
+          <span>Sign Out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function AccountDropdownForBottomBar() {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { setTheme, theme } = useTheme();
+  const { data: session, isPending } = authClient.useSession();
+
+  const user = session?.user;
+
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Signed out successfully");
+            router.replace("/auth/sign-in");
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast.error("Failed to sign out");
+    }
+  };
+
+  if (isPending) {
+    return (
+      <div className="w-10 h-10 flex items-center justify-center">
+        <Skeleton className="size-7 rounded-lg" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const displayName = user.name || "User";
+  const initials = getUserInitials(user.name, user.email);
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="User account menu"
+          className={cn(
+            "w-10 h-10 rounded-lg flex items-center justify-center transition-colors cursor-pointer",
+            open
+              ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-xs"
+              : "text-sidebar-foreground hover:bg-sidebar-accent/20"
+          )}
+        >
+          <Avatar className="size-6.5 rounded-lg border border-border/50">
+            <AvatarImage src={user.image ?? undefined} alt={displayName} />
+            <AvatarFallback className="rounded-lg text-[10px] font-semibold bg-primary/10 text-primary">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        className="w-64 rounded-xl p-1.5 shadow-xl border-border/80 z-50 mb-2"
+        side="top"
+        align="end"
+        sideOffset={12}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2.5 px-2.5 py-2 text-left text-sm rounded-lg bg-muted/40">
             <Avatar className="size-8 rounded-lg shrink-0 border border-border/50">
               <AvatarImage src={user.image ?? undefined} alt={displayName} />
               <AvatarFallback className="rounded-lg text-xs font-semibold bg-primary text-primary-foreground">
