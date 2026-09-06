@@ -94,13 +94,19 @@ export const generateHabits = async ({
       };
     }
 
+    // 3.5. Fetch user preferences
+    const userPrefs = await prisma.userPreferences.findUnique({
+      where: { userId: session.user.id },
+      select: { preferredTone: true },
+    });
+
     // 4. Call AI API with explicit timeout
     const userPrompt = generateHabitsUserPrompt({
       goal,
       additionalDetails,
       count,
     });
-    const systemPrompt = generateHabitsSystemPrompt();
+    const systemPrompt = generateHabitsSystemPrompt(userPrefs?.preferredTone);
 
     const response = await withTimeout(
       genAI.models.generateContent({
@@ -184,13 +190,19 @@ export const regenerateHabits = async ({
       };
     }
 
+    // 3.5. Fetch user preferences
+    const userPrefs = await prisma.userPreferences.findUnique({
+      where: { userId: session.user.id },
+      select: { preferredTone: true },
+    });
+
     const userPrompt = regenerateHabitsUserPrompt({
       goal,
       additionalDetails,
       count,
       lockedHabits,
     });
-    const systemPrompt = regenerateHabitsSystemPrompt();
+    const systemPrompt = regenerateHabitsSystemPrompt(userPrefs?.preferredTone);
 
     const response = await withTimeout(
       genAI.models.generateContent({

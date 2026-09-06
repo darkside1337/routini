@@ -1,7 +1,10 @@
 import "server-only";
 
-export const generateHabitsSystemPrompt = () => {
-  return `You are a behavioral psychologist and habit formation expert. You help people achieve their goals through small, actionable daily habits. Generate specific, measurable, bite-sized daily habits with clear duration, difficulty, and rationale.`;
+export const generateHabitsSystemPrompt = (tone?: string | null) => {
+  const toneInstruction = tone
+    ? `Adopt a ${tone} tone in your descriptions and rationales.`
+    : "";
+  return `You are a behavioral psychologist and habit formation expert. You help people achieve their goals through small, actionable daily habits. Generate specific, measurable, bite-sized daily habits with clear duration, difficulty, and rationale. ${toneInstruction}`.trim();
 };
 
 export const generateHabitsUserPrompt = ({
@@ -40,8 +43,11 @@ Format:
 }`;
 };
 
-export const regenerateHabitsSystemPrompt = () => {
-  return `You are a behavioral psychologist and habit formation expert. Generate NEW habits that are distinctly DIFFERENT from existing ones, providing actionable duration, difficulty, and rationale.`;
+export const regenerateHabitsSystemPrompt = (tone?: string | null) => {
+  const toneInstruction = tone
+    ? `Adopt a ${tone} tone in your descriptions and rationales.`
+    : "";
+  return `You are a behavioral psychologist and habit formation expert. Generate NEW habits that are distinctly DIFFERENT from existing ones, providing actionable duration, difficulty, and rationale. ${toneInstruction}`.trim();
 };
 
 export const regenerateHabitsUserPrompt = ({
