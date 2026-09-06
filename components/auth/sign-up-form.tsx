@@ -1,285 +1,107 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Check, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { FcGoogle } from "react-icons/fc";
-import { Button } from "../ui/button";
 import { FaGithub } from "react-icons/fa";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
+import { Loader2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { signIn } from "@/lib/auth-client";
+import { toast } from "sonner";
 import Link from "next/link";
 
-const signUpFormSchema = z
-  .object({
-    displayName: z
-      .string()
-      .trim()
-      .min(2, "Display name must be at least 2 characters"),
-    username: z
-      .string()
-      .min(3, "Username must be at least 3 characters")
-      .max(20, "Username must be at most 20 characters")
-      .regex(
-        /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/,
-        "Username can only contain lowercase letters, numbers, and single dots, dashes, or underscores between characters"
-      )
-      .refine(
-        (username) => !/^[._-]|[._-]$/.test(username),
-        "Username cannot start or end with a special character"
-      ),
-    email: z.email("Invalid email address"),
-    password: z
-      .string()
-      .trim()
-      .min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().trim(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
 export function SignUpForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<"google" | "github" | null>(null);
 
-  const form = useForm<z.infer<typeof signUpFormSchema>>({
-    resolver: zodResolver(signUpFormSchema),
-    defaultValues: {
-      displayName: "",
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-    mode: "onChange",
-  });
-
-  const { isSubmitting } = form.formState;
-
-  const onSubmit = async (values: z.infer<typeof signUpFormSchema>) => {
-    // TODO - Add sign up logic
-
-    console.log(values);
+  const handleSocialSignUp = async (provider: "google" | "github") => {
+    try {
+      setLoadingProvider(provider);
+      await signIn.social({
+        provider,
+        callbackURL: "/dashboard",
+      });
+    } catch (error) {
+      console.error(`Sign-up with ${provider} failed:`, error);
+      toast.error(`Failed to sign up with ${provider === "google" ? "Google" : "GitHub"}. Please try again.`);
+      setLoadingProvider(null);
+    }
   };
 
   return (
-    <div className="w-full max-w-md">
-      {/* Social Login Buttons */}
-      <div className="space-y-3 mb-8">
+    <div className="w-full max-w-md space-y-8">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-2">
+          <Sparkles className="size-3.5" />
+          <span>Instant Setup</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          Join Routini
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          Turn your ambitions into daily habits with AI in seconds. Fast, secure 1-click sign up.
+        </p>
+      </div>
+
+      {/* Social Auth Buttons */}
+      <div className="space-y-3">
         <Button
-          variant={"ghost"}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-border rounded-lg  transition-colors font-medium"
+          type="button"
+          variant="outline"
+          disabled={loadingProvider !== null}
+          onClick={() => handleSocialSignUp("google")}
+          className="w-full h-12 flex items-center justify-center gap-3 px-4 rounded-xl border-border/80 hover:bg-accent/60 transition-all font-medium text-sm cursor-pointer shadow-xs disabled:opacity-60"
         >
-          <FcGoogle size={20} className="w-5 h-5 " />
-          Continue with Google
+          {loadingProvider === "google" ? (
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          ) : (
+            <FcGoogle className="size-5 shrink-0" />
+          )}
+          <span>Continue with Google</span>
         </Button>
 
         <Button
-          variant={"ghost"}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-border rounded-lg hover:bg-[#1877F2] transition-colors font-medium"
+          type="button"
+          variant="outline"
+          disabled={loadingProvider !== null}
+          onClick={() => handleSocialSignUp("github")}
+          className="w-full h-12 flex items-center justify-center gap-3 px-4 rounded-xl border-border/80 hover:bg-accent/60 transition-all font-medium text-sm cursor-pointer shadow-xs disabled:opacity-60"
         >
-          <FaGithub size={20} className="w-5 h-5" />
-          Continue with Github
+          {loadingProvider === "github" ? (
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          ) : (
+            <FaGithub className="size-5 shrink-0" />
+          )}
+          <span>Continue with GitHub</span>
         </Button>
       </div>
 
-      {/* Divider */}
-      <div className="relative mb-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-background text-muted-foreground">
-            Or sign up with email
-          </span>
-        </div>
-      </div>
-
-      {/* Form */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          {/* Display Name */}
-          <FormField
-            control={form.control}
-            name="displayName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  Display Name
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="John Doe"
-                    {...field}
-                    className="bg-input border-border focus:ring-primary"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Username */}
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">Username</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="johndoe"
-                    {...field}
-                    className="bg-input border-border focus:ring-primary"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Email */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  Email Address
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="you@example.com"
-                    {...field}
-                    className="bg-input border-border focus:ring-primary"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Password */}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      {...field}
-                      className="bg-input border-border focus:ring-primary pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Confirm Password */}
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium">
-                  Confirm Password
-                </FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      {...field}
-                      className="bg-input border-border focus:ring-primary pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating Account...
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4 mr-2" />
-                Start Building Routines
-              </>
-            )}
-          </Button>
-        </form>
-      </Form>
-
-      {/* Footer Links */}
-      <div className="mt-8 space-y-4 text-center text-sm text-muted-foreground">
-        <p>
+      {/* Trust & Policy Footer */}
+      <div className="space-y-4 text-center text-xs sm:text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground/80 leading-relaxed">
           By signing up, you agree to our{" "}
           <Link
-            href={"/terms-and-conditions"}
+            href="/terms-and-conditions"
             className="text-primary hover:underline font-medium"
           >
-            Terms & Privacy Policy
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/terms-and-conditions"
+            className="text-primary hover:underline font-medium"
+          >
+            Privacy Policy
           </Link>
+          .
         </p>
-        <p>
+
+        <p className="pt-2 border-t border-border/50">
           Already have an account?{" "}
           <Link
             href="/auth/sign-in"
             className="text-primary hover:underline font-medium"
           >
-            Log in
+            Sign in
           </Link>
         </p>
       </div>

@@ -326,6 +326,18 @@ export const saveHabits = async (input: SaveHabitsInput) => {
       },
     });
 
+    // 4. Mark onboarding completed if not already done
+    await prisma.userPreferences.upsert({
+      where: { userId },
+      create: {
+        userId,
+        hasCompletedOnboarding: true,
+      },
+      update: {
+        hasCompletedOnboarding: true,
+      },
+    });
+
     revalidatePath("/dashboard");
 
     return {

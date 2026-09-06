@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogTrigger, DialogContent } from "../ui/dialog";
 import { Plus } from "lucide-react";
@@ -29,16 +29,27 @@ type ModalView = "form" | "review";
 
 interface CreateGoalModalProps extends React.ComponentProps<typeof Button> {
   onGoalCreated?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialGoal?: string;
+  hideTrigger?: boolean;
 }
 
 const CreateGoalModal = ({
   children,
   className,
   onGoalCreated,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  initialGoal,
+  hideTrigger = false,
   ...props
 }: CreateGoalModalProps) => {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+
   const [currentView, setCurrentView] = useState<ModalView>("form");
 
   const [generatedHabits, setGeneratedHabits] = useState<
@@ -59,13 +70,24 @@ const CreateGoalModal = ({
   } = useForm<GoalInput>({
     resolver: zodResolver(GoalInputSchema),
     defaultValues: {
-      goal: "",
+      goal: initialGoal || "",
       additionalDetails: "",
     },
   });
 
+  useEffect(() => {
+    if (initialGoal) {
+      setValue("goal", initialGoal);
+    }
+  }, [initialGoal, setValue]);
+
   const handleOpenChange = (nextOpen: boolean) => {
-    setOpen(nextOpen);
+    if (isControlled) {
+      controlledOnOpenChange?.(nextOpen);
+    } else {
+      setInternalOpen(nextOpen);
+    }
+
     if (!nextOpen) {
       // If modal is closed, give a short grace period then reset view if not saving
       if (!isSaving && !isGenerating) {
@@ -145,7 +167,7 @@ const CreateGoalModal = ({
       setGenerationError(null);
       setCurrentView("form");
       reset();
-      setOpen(false);
+      handleOpenChange(false);
 
       // Refresh data
       if (onGoalCreated) {
@@ -217,16 +239,18 @@ const CreateGoalModal = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button className={className} {...props}>
-          {children || (
-            <>
-              <Plus className="size-4" />
-              <span>Set a New Goal</span>
-            </>
-          )}
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button className={className} {...props}>
+            {children || (
+              <>
+                <Plus className="size-4" />
+                <span>Set a New Goal</span>
+              </>
+            )}
+          </Button>
+        </DialogTrigger>
+      )}
 
       <DialogContent className="sm:max-w-xl p-4 sm:p-6 gap-0 max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
         {currentView === "form" ? (

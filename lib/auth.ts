@@ -13,7 +13,7 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   emailAndPassword: {
-    enabled: true,
+    enabled: false,
   },
   socialProviders: {
     google: {
@@ -36,7 +36,7 @@ export const auth = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google", "github", "email-password"],
+      trustedProviders: ["google", "github"],
     },
   },
   trustedOrigins: [

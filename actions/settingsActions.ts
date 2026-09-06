@@ -21,6 +21,7 @@ export type UserSettingsData = {
     weekStartsOn: number;
     dailyReminderTime: string;
     enableNotifications: boolean;
+    hasCompletedOnboarding?: boolean;
   };
 };
 
@@ -79,6 +80,7 @@ export async function getUserSettings(): Promise<UserSettingsResponse> {
           weekStartsOn: preferences.weekStartsOn ?? 1,
           dailyReminderTime: preferences.dailyReminderTime || "08:00",
           enableNotifications: preferences.enableNotifications ?? true,
+          hasCompletedOnboarding: preferences.hasCompletedOnboarding ?? false,
         },
       },
     };

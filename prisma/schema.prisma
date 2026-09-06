@@ -152,7 +152,6 @@ model Goal {
 
   // Relationships
   habits     Habit[]
-  milestones Milestone[] // Optional: break goals into checkpoints
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -234,29 +233,6 @@ model HabitLog {
   @@index([habitId, date]) // Composite for streak calculations
 }
 
-// ============================================================================
-// MILESTONE - Optional checkpoints for breaking down goals
-// ============================================================================
-
-model Milestone {
-  id     String @id @default(cuid())
-  goalId String
-  goal   Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
-
-  title       String // "Complete 5K run"
-  description String?   @db.Text
-  targetDate  DateTime?
-  completed   Boolean   @default(false)
-  completedAt DateTime?
-
-  order Int @default(0) // For sequential milestones
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([goalId])
-  @@index([goalId, completed])
-}
 
 // ============================================================================
 // OPTIONAL: User preferences (for AI personalization)
@@ -265,6 +241,9 @@ model Milestone {
 model UserPreferences {
   id     String @id @default(cuid())
   userId String @unique
+
+  // Onboarding
+  hasCompletedOnboarding Boolean @default(false)
 
   // AI behavior
   preferredTone String? // "motivational", "direct", "casual"

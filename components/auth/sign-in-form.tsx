@@ -1,221 +1,79 @@
 "use client";
+
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Eye, EyeOff, LogIn } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { signIn } from "@/lib/auth-client";
 import { toast } from "sonner";
-import { FaGithub } from "react-icons/fa";
-const formSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z.string().min(2, "Password is required"),
-  rememberMe: z.boolean().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import Link from "next/link";
 
 export function SignInForm() {
-  const [showPassword, setShowPassword] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<"google" | "github" | null>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
-    },
-  });
-
-  const { isSubmitting } = form.formState;
-
-  const handleGoogleSignIn = async () => {
+  const handleSocialSignIn = async (provider: "google" | "github") => {
     try {
-      await signIn.social({ provider: "google", callbackURL: "/dashboard" });
-      toast.success("Signed in with Google");
+      setLoadingProvider(provider);
+      await signIn.social({
+        provider,
+        callbackURL: "/dashboard",
+      });
     } catch (error) {
-      toast.error("Error signing in with Google");
-      console.log(error);
+      console.error(`Sign-in with ${provider} failed:`, error);
+      toast.error(`Failed to sign in with ${provider === "google" ? "Google" : "GitHub"}. Please try again.`);
+      setLoadingProvider(null);
     }
-  };
-
-  const handleGithubSignIn = async () => {
-    try {
-      await signIn.social({ provider: "github", callbackURL: "/dashboard" });
-      toast.success("Signed in with Github");
-    } catch (error) {
-      toast.error("Error signing in with Github");
-      console.log(error);
-    }
-  };
-
-  const onSubmit = async (values: FormValues) => {
-    // TODO - Add sign in logic
-
-    console.log(values);
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-md space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2 leading-tight text-center">
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Welcome Back
         </h1>
-        <p className="text-muted-foreground">
-          Continue building your habits and tracking your progress
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          Sign in to access your goals, habit streaks, and personal routines.
         </p>
       </div>
 
-      {/* Social Login Buttons */}
-      <div className="space-y-3 mb-8">
+      {/* Social Auth Buttons */}
+      <div className="space-y-3">
         <Button
+          type="button"
           variant="outline"
-          className="w-full bg-transparent hover:cursor-pointer"
-          size="lg"
-          onClick={handleGoogleSignIn}
+          disabled={loadingProvider !== null}
+          onClick={() => handleSocialSignIn("google")}
+          className="w-full h-12 flex items-center justify-center gap-3 px-4 rounded-xl border-border/80 hover:bg-accent/60 transition-all font-medium text-sm cursor-pointer shadow-xs disabled:opacity-60"
         >
-          <FcGoogle size={20} className="w-5 h-5 " />
-          Continue with Google
+          {loadingProvider === "google" ? (
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          ) : (
+            <FcGoogle className="size-5 shrink-0" />
+          )}
+          <span>Continue with Google</span>
         </Button>
 
         <Button
+          type="button"
           variant="outline"
-          className="w-full bg-transparent hover:cursor-pointer hover:bg-[#1877F2]"
-          size="lg"
-          onClick={handleGithubSignIn}
+          disabled={loadingProvider !== null}
+          onClick={() => handleSocialSignIn("github")}
+          className="w-full h-12 flex items-center justify-center gap-3 px-4 rounded-xl border-border/80 hover:bg-accent/60 transition-all font-medium text-sm cursor-pointer shadow-xs disabled:opacity-60"
         >
-          <FaGithub size={20} className="w-5 h-5" />
-          Continue with Github
+          {loadingProvider === "github" ? (
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          ) : (
+            <FaGithub className="size-5 shrink-0" />
+          )}
+          <span>Continue with GitHub</span>
         </Button>
       </div>
-
-      {/* Divider */}
-      <div className="relative mb-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-background text-muted-foreground">
-            Or sign in with email
-          </span>
-        </div>
-      </div>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          {/* Email */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email Address</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="you@example.com"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Password */}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-sm text-primary hover:underline font-medium"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Remember Me */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              {...form.register("rememberMe")}
-              className="w-4 h-4 rounded border-border cursor-pointer ml-auto"
-            />
-            <label
-              htmlFor="rememberMe"
-              className="text-sm text-muted-foreground cursor-pointer"
-            >
-              Remember me
-            </label>
-          </div>
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full mt-6 hover:cursor-pointer"
-            size="lg"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                Signing In...
-              </>
-            ) : (
-              <>
-                <LogIn className="w-4 h-4 mr-2" />
-                Sign In
-              </>
-            )}
-          </Button>
-        </form>
-      </Form>
 
       {/* Footer Links */}
-      <div className="mt-8 text-center text-sm text-muted-foreground">
-        <p>
+      <div className="space-y-4 text-center text-xs sm:text-sm text-muted-foreground">
+        <p className="pt-2 border-t border-border/50">
           Don&apos;t have an account?{" "}
           <Link
             href="/auth/sign-up"

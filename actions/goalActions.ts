@@ -201,7 +201,7 @@ export const deleteGoal = async (input: DeleteGoalInput) => {
       return { success: false, error: "Goal not found" };
     }
 
-    // Deleting the goal will automatically cascade delete habits, logs, and milestones per Prisma schema
+    // Deleting the goal will automatically cascade delete habits and logs per Prisma schema
     await prisma.goal.delete({
       where: {
         id: goalId,
