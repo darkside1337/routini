@@ -13,30 +13,54 @@ Powered by Google Gemini (`@google/genai`), Routini decomposes big ambitions int
 
 <video src="public/assets/demo/demo-ai-goal-creation.mp4" width="100%" autoplay loop muted playsinline></video>
 
+
+https://github.com/user-attachments/assets/14c22ec1-f205-486b-b15b-5e70c40d4423
+
+
 ### 👋 Frictionless Onboarding
 A zero-friction starter flow gets new users from first sign-in to their first active routine in seconds with curated goal templates and instant prefill.
 
 <video src="public/assets/demo/demo-onboarding.mp4" width="100%" autoplay loop muted playsinline></video>
+
+
+https://github.com/user-attachments/assets/b24a5446-858f-4c89-84dc-74b40ca39ab3
+
 
 ### 📊 Daily Habit Tracking & Optimistic UI
 Track daily habits with zero-latency optimistic updates, animated completion progress bars, and instant status filtering (`In Progress`, `Completed`, `All`).
 
 <video src="public/assets/demo/demo-daily-tracking.mp4" width="100%" autoplay loop muted playsinline></video>
 
+
+https://github.com/user-attachments/assets/232d3748-bd5d-4c2b-9af8-2583109231ca
+
+
 ### 🔥 Consistency Heatmap & Streaks
 Visualize long-term momentum with a GitHub-style 365-day consistency calendar, active milestone streaks, and detailed completion breakdowns per habit.
 
 <video src="public/assets/demo/demo-progress-heatmap.mp4" width="100%" autoplay loop muted playsinline></video>
+
+
+https://github.com/user-attachments/assets/a0605be3-33de-4f71-8a5b-e2cb22328b8c
+
 
 ### ✏️ Goal & Habit Management
 Full routine lifecycle control: pause individual habits without breaking streak history, edit schedules and difficulty tiers, or archive completed goals.
 
 <video src="public/assets/demo/demo-edit-goal.mp4" width="100%" autoplay loop muted playsinline></video>
 
+
+https://github.com/user-attachments/assets/d49e14ce-71a5-4a1f-a8a9-054df0df401f
+
+
 ### 📱 Mobile & Responsive Layout
 Built mobile-first with adaptive layouts that transition cleanly from desktop widescreen dashboards to compact mobile viewports with native touch targets and bottom navigation.
 
 <video src="public/assets/demo/demo-responsive-design.mp4" width="100%" autoplay loop muted playsinline></video>
+
+
+https://github.com/user-attachments/assets/f50416f0-7389-49b4-b449-f8831dec38e8
+
 
 ---
 
