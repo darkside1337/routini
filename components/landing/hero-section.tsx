@@ -21,6 +21,7 @@ export function HeroSection() {
               className="w-full rounded-lg object-cover"
               width={800}
               height={800}
+              loading="eager"
             />
           </div>
 
