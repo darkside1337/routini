@@ -55,12 +55,12 @@ const CreateGoalFormView = ({
 
   return (
     <div className="flex flex-col gap-5">
-      <DialogHeader className="space-y-1.5 text-left">
-        <div className="flex items-center gap-2">
+      <DialogHeader className="space-y-1.5 text-left pr-6 sm:pr-0">
+        <div className="flex items-center gap-2 flex-wrap">
           <DialogTitle className="text-xl font-semibold tracking-tight text-foreground">
             Set a New Goal
           </DialogTitle>
-          <Badge variant="secondary" className="gap-1 text-xs py-0.5 px-2 bg-primary/10 text-primary border-primary/20">
+          <Badge variant="secondary" className="gap-1 text-xs py-0.5 px-2 bg-primary/10 text-primary border-primary/20 shrink-0">
             <Sparkles className="size-3" />
             AI Powered
           </Badge>
@@ -107,7 +107,7 @@ const CreateGoalFormView = ({
                         variant="outline"
                         size="sm"
                         onClick={() => handleSelectSuggestion(suggestion)}
-                        className="rounded-full h-6 px-2.5 text-xs text-muted-foreground hover:text-foreground font-normal"
+                        className="rounded-full min-h-[32px] sm:min-h-0 sm:h-7 px-3 py-1.5 sm:py-1 text-xs text-muted-foreground hover:text-foreground font-normal"
                       >
                         {suggestion}
                       </Button>
@@ -149,7 +149,7 @@ const CreateGoalFormView = ({
               type="button"
               variant="outline"
               onClick={switchViewToReview}
-              className="w-full sm:w-auto text-xs gap-1.5 order-2 sm:order-1"
+              className="w-full sm:w-auto h-10 sm:h-9 text-xs gap-1.5 order-2 sm:order-1"
             >
               Back to Habit List
               <ArrowRight className="size-3.5" />

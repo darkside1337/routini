@@ -66,7 +66,7 @@ const CreateGoalReviewView = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <DialogHeader className="space-y-1.5 text-left px-4">
+      <DialogHeader className="space-y-1.5 text-left pr-6 sm:pr-0">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <DialogTitle className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-2">
             <Sparkles className="size-5 text-primary" />
@@ -75,7 +75,7 @@ const CreateGoalReviewView = ({
           {generatedHabits && generatedHabits.length > 0 && !isGenerating && (
             <Badge
               variant="outline"
-              className="text-xs font-normal gap-1 py-0.5 border-border"
+              className="text-xs font-normal gap-1 py-0.5 border-border shrink-0"
             >
               <Lock className="size-3 text-primary" />
               <span>
@@ -84,11 +84,11 @@ const CreateGoalReviewView = ({
             </Badge>
           )}
         </div>
-        <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
+        <DialogDescription className="text-sm text-muted-foreground leading-relaxed break-words">
           {goalTitle ? (
             <span>
               Habits designed for{" "}
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-foreground break-words">
                 &ldquo;{goalTitle}&rdquo;
               </span>
               .
@@ -176,7 +176,7 @@ const CreateGoalReviewView = ({
           </div>
         </div>
       ) : (
-        <div className="space-y-2.5 max-h-95 overflow-y-auto pr-1">
+        <div className="space-y-2.5 max-h-[min(380px,50dvh)] overflow-y-auto pr-1 overscroll-contain">
           {isGenerating ? (
             <>
               {/* Show locked habits first */}
@@ -215,7 +215,7 @@ const CreateGoalReviewView = ({
           size="sm"
           onClick={switchViewToForm}
           disabled={isGenerating || isSaving}
-          className="w-full sm:w-auto text-xs text-muted-foreground hover:text-foreground gap-1.5 order-3 sm:order-1"
+          className="w-full sm:w-auto h-9 sm:h-8 text-xs text-muted-foreground hover:text-foreground gap-1.5 order-3 sm:order-1"
         >
           <ArrowLeft className="size-3.5" />
           Edit Goal Prompt
@@ -228,7 +228,7 @@ const CreateGoalReviewView = ({
             size="sm"
             onClick={handleGenerateAgain}
             disabled={isGenerating || isSaving}
-            className="flex-1 sm:flex-initial text-xs gap-1.5"
+            className="flex-1 sm:flex-initial h-9 sm:h-8 px-3 text-xs gap-1.5"
           >
             {isGenerating ? (
               <Loader2 className="size-3.5 animate-spin" />
@@ -249,7 +249,7 @@ const CreateGoalReviewView = ({
             size="sm"
             disabled={isGenerating || isSaving || !generatedHabits?.length}
             onClick={handleSaveHabits}
-            className="flex-1 sm:flex-initial text-xs font-medium gap-1.5"
+            className="flex-1 sm:flex-initial h-9 sm:h-8 px-3.5 text-xs font-medium gap-1.5"
           >
             {isSaving ? (
               <>

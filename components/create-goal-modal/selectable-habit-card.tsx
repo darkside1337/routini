@@ -57,7 +57,7 @@ export function SelectableHabitCard({
           <div className="flex-1 min-w-0">
             <p
               className={cn(
-                "text-sm leading-snug transition-colors",
+                "text-sm leading-snug transition-colors break-words",
                 locked
                   ? "text-foreground font-medium"
                   : "text-foreground/90 font-normal",
@@ -102,7 +102,7 @@ export function SelectableHabitCard({
                             e.stopPropagation();
                           }
                         }}
-                        className="inline-flex items-center text-muted-foreground/70 hover:text-foreground transition-colors p-0.5 rounded cursor-help"
+                        className="inline-flex items-center text-muted-foreground/70 hover:text-foreground transition-colors p-1.5 -m-1 rounded cursor-help"
                         aria-label="Why this habit was recommended"
                       >
                         <Info className="size-3.5" />

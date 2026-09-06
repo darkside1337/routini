@@ -228,7 +228,7 @@ const CreateGoalModal = ({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-xl p-6 gap-0">
+      <DialogContent className="sm:max-w-xl p-4 sm:p-6 gap-0 max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
         {currentView === "form" ? (
           <CreateGoalFormView
             control={control}
