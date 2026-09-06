@@ -40,12 +40,19 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    process.env.BETTER_AUTH_URL || "",
+    process.env.NEXT_PUBLIC_APP_URL || "",
+    "http://localhost:3000",
     "http://localhost:3001",
-    "http://192.168.1.7",
-    "http://192.168.1.7:3000",
-    "http://192.168.1.6",
-  ],
+    "http://192.168.1.*:*",
+    "http://192.168.*.*:*",
+    "https://*.ngrok-free.app",
+    "https://*.ngrok-free.dev",
+    "https://*.trycloudflare.com",
+    ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS
+      ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(",")
+      : []),
+  ].filter(Boolean),
   plugins: [username({}), nextCookies()],
   databaseHooks: {
     user: {
